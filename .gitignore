@@ -1,7 +1,6 @@
 *.obj
 *.opensdf
 *.obj
-*.pdb
 *.idb
 *.exe
 *.ilk
@@ -9,3 +8,9 @@
 *.log
 *.tlog
 *.lastbuildstate
+*.dll
+*.pdb
+*.DLL
+*.pdb
+*.lib
+*.cpp

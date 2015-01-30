@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="WE.h" />
+    <ClInclude Include="clover.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="require.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshMisc.h">
+      <Filter>mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="fbxCommon.h">
+      <Filter>mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="FbxImporter.h">
+      <Filter>mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Content.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferType.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="wemath.h">
+      <Filter>base</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="WE">
+      <UniqueIdentifier>{96576e09-bf75-4dd1-835e-f616e705b449}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base">
+      <UniqueIdentifier>{3fe4db38-d223-41be-8c4b-1c5962cc657b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{12d6c8ce-830f-4177-9d22-bd23ed6927f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mesh">
+      <UniqueIdentifier>{5d472b6e-a5b5-4d33-8059-3a58c4481a16}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D3D.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="clover.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="fbxCommon.cpp">
+      <Filter>mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="FbxImporter.cpp">
+      <Filter>mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Content.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="wemath.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
