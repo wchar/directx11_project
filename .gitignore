@@ -8,5 +8,4 @@
 *.log
 *.tlog
 *.lastbuildstate
-*.dll
 *.lib
