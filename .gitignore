@@ -10,6 +10,4 @@
 *.lastbuildstate
 *.dll
 *.pdb
-*.DLL
-*.pdb
 *.lib
