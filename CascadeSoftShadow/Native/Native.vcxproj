@@ -41,7 +41,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>SIMPLEDLL_EXPORT;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -70,12 +70,14 @@
   <ItemGroup>
     <ClInclude Include="BufferType.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CascadeManager.h" />
     <ClInclude Include="clover.h" />
     <ClInclude Include="Content.h" />
     <ClInclude Include="D3D.h" />
     <ClInclude Include="fbxCommon.h" />
     <ClInclude Include="FbxImporter.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="Sampler.h" />
     <ClInclude Include="wemath.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshMisc.h" />
@@ -86,12 +88,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CascadeManager.cpp" />
     <ClCompile Include="clover.cpp" />
     <ClCompile Include="Content.cpp" />
     <ClCompile Include="D3D.cpp" />
     <ClCompile Include="fbxCommon.cpp" />
     <ClCompile Include="FbxImporter.cpp" />
     <ClCompile Include="Material.cpp" />
+    <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="wemath.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Renderer.cpp" />

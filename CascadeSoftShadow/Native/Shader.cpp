@@ -4,11 +4,20 @@
 #include "BufferType.h"
 
 USING_WE
-
-VertexShader::VertexShader(wchar_t* file)
+VertexShader::VertexShader(function<void(ID3DBlob **, ID3D11VertexShader **)> func)
 {
-    _blob = gContent()->getBlob(file, "VS");
-    V(gDevice()->CreateVertexShader(_blob->GetBufferPointer(), _blob->GetBufferSize(), NULL, &_VS));
+    func(&_blob, &_VS);
+}
+
+VertexShader::VertexShader(wchar_t *file)
+    : VertexShader([file](ID3DBlob **blob, ID3D11VertexShader **vs)
+{
+    WLOG(L"load vertex shader: " << file);
+    *blob = gContent()->getBlob(file, "VS");
+    V(gDevice()->CreateVertexShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, vs));
+})
+{
+
 }
 
 VertexShader::~VertexShader()
@@ -21,10 +30,20 @@ void VertexShader::prepare()
     gContext()->VSSetShader(_VS, nullptr, 0);
 }
 
-PixelShader::PixelShader(wchar_t* file)
+PixelShader::PixelShader(function<void(ID3DBlob **, ID3D11PixelShader **)> func)
 {
-    _blob = gContent()->getBlob(file, "PS");
-    V(gDevice()->CreatePixelShader(_blob->GetBufferPointer(), _blob->GetBufferSize(), NULL, &_PS));
+    func(&_blob, &_PS);
+}
+
+PixelShader::PixelShader(wchar_t *file)
+    : PixelShader([file](ID3DBlob **blob, ID3D11PixelShader **ps)
+{
+    WLOG(L"load pixel shader: " << file);
+    *blob = gContent()->getBlob(file, "PS");
+    V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
+})
+{
+
 }
 
 PixelShader::~PixelShader()
@@ -37,8 +56,8 @@ void PixelShader::prepare()
     gContext()->PSSetShader(_PS, nullptr, 0);
 }
 
-MeshVertexShader::MeshVertexShader() :
-VertexShader(L"shaders/MeshVS.hlsl")
+MeshVertexShader::MeshVertexShader()
+    : VertexShader(L"shaders/MeshVS.hlsl")
 {
 
 }
@@ -49,11 +68,11 @@ MeshVertexShader::~MeshVertexShader()
 
 void MeshVertexShader::prepare()
 {
-
+	VertexShader::prepare();
 }
 
-CascadeShader::CascadeShader() :
-PixelShader(L"shaders/MeshCascade.hlsl")
+CascadeShader::CascadeShader()
+    : PixelShader(L"shaders/MeshCascade.hlsl")
 {
 }
 
@@ -67,8 +86,8 @@ void CascadeShader::prepare()
     PixelShader::prepare();
 }
 
-MeshPixelShader::MeshPixelShader() :
-PixelShader(L"shaders/MeshPS.hlsl")
+MeshPixelShader::MeshPixelShader()
+    : PixelShader(L"shaders/MeshPS.hlsl")
 {
 }
 
@@ -81,8 +100,8 @@ void MeshPixelShader::prepare()
     PixelShader::prepare();
 }
 
-FullScreenVertexShader::FullScreenVertexShader() :
-VertexShader(L"shaders/FullScreenQuadVS.hlsl")
+FullScreenVertexShader::FullScreenVertexShader()
+    : VertexShader(L"shaders/FullScreenQuadVS.hlsl")
 {
 }
 
@@ -95,8 +114,8 @@ void FullScreenVertexShader::prepare()
     VertexShader::prepare();
 }
 
-FullScreenPixelShader::FullScreenPixelShader() :
-PixelShader(L"shaders/TestSRV.hlsl")
+FullScreenPixelShader::FullScreenPixelShader()
+    : PixelShader(L"shaders/TestSRV.hlsl")
 {
 }
 
@@ -107,4 +126,60 @@ FullScreenPixelShader::~FullScreenPixelShader()
 void FullScreenPixelShader::prepare()
 {
     PixelShader::prepare();
+}
+
+VarianceBlurX::VarianceBlurX()
+    : PixelShader([](ID3DBlob **blob, ID3D11PixelShader **ps)
+{
+	V(compileShaderFromFile(L"shaders/Variance.hlsl", NULL, "PSBlurX", "ps_5_0", blob));
+    V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
+})
+{
+
+}
+
+VarianceBlurX::~VarianceBlurX()
+{
+
+}
+
+void VarianceBlurX::prepare()
+{
+	PixelShader::prepare();
+}
+
+VarianceBlurY::VarianceBlurY()
+    : PixelShader([](ID3DBlob **blob, ID3D11PixelShader **ps)
+{
+	V(compileShaderFromFile(L"shaders/Variance.hlsl", NULL, "PSBlurY", "ps_5_0", blob));
+	V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
+})
+{
+	PixelShader::prepare();
+}
+
+VarianceBlurY::~VarianceBlurY()
+{
+
+}
+
+void VarianceBlurY::prepare()
+{
+	PixelShader::prepare();
+}
+
+VarianceBlurVS::VarianceBlurVS()
+	: VertexShader(L"shaders/Variance.hlsl")
+{
+
+}
+
+VarianceBlurVS::~VarianceBlurVS()
+{
+
+}
+
+void VarianceBlurVS::prepare()
+{
+	VertexShader::prepare();
 }

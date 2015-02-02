@@ -15,7 +15,7 @@ public:
     ID3D11ShaderResourceView* getTexture(wchar_t*);
 
     // blob
-    ID3DBlob* getBlob(wchar_t*, char* type = "VS");
+	ID3DBlob* getBlob(wchar_t*, char* type = "VS");
 private:
     Content();
     ~Content();

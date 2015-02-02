@@ -95,7 +95,7 @@ HRESULT compileShaderFromMemory(
 	return S_OK;
 }
 
-HRESULT CreateBuffer(UINT uElementSize, UINT uCount, VOID* pInitData, ID3D11Buffer** ppBufOut)
+HRESULT createBuffer(UINT uElementSize, UINT uCount, VOID* pInitData, ID3D11Buffer** ppBufOut)
 {
 	*ppBufOut = NULL;
 
@@ -118,7 +118,7 @@ HRESULT CreateBuffer(UINT uElementSize, UINT uCount, VOID* pInitData, ID3D11Buff
 	}
 }
 
-HRESULT CreateBufferSRV(ID3D11Buffer* pBuffer, ID3D11ShaderResourceView** ppSRVOut)
+HRESULT createBufferSRV(ID3D11Buffer* pBuffer, ID3D11ShaderResourceView** ppSRVOut)
 {
 	D3D11_BUFFER_DESC descBuf;
 	ZeroMemory(&descBuf, sizeof(descBuf));
@@ -150,7 +150,7 @@ HRESULT CreateBufferSRV(ID3D11Buffer* pBuffer, ID3D11ShaderResourceView** ppSRVO
 	return gDevice()->CreateShaderResourceView(pBuffer, &desc, ppSRVOut);
 }
 
-HRESULT CreateBufferUAV(ID3D11Buffer* pBuffer, ID3D11UnorderedAccessView** ppUAVOut)
+HRESULT createBufferUAV(ID3D11Buffer* pBuffer, ID3D11UnorderedAccessView** ppUAVOut)
 {
 	D3D11_BUFFER_DESC descBuf;
 	ZeroMemory(&descBuf, sizeof(descBuf));
@@ -198,7 +198,7 @@ NS_WE_END
 
 NS_WE_BEGAN
 
-Camera* camera()
+Camera* gCamera()
 {
 	static FPSCamera s_camera;
 	if (GetAsyncKeyState('L'))

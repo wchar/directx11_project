@@ -10,7 +10,7 @@ class DLL_EXPORT Mesh
 public:
     static Mesh* createFromFbx(wchar_t* file);
 
-    void drawSubset();
+	void drawSubset();
 private:    
     Mesh();
     ~Mesh();

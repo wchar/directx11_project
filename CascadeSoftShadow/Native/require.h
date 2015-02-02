@@ -18,22 +18,13 @@
 	if(p)						\
 	{ (p)->Release(); (p)=NULL; }
 
-#define SAFE_DELETE_ARRAY(p) if(p)	\
+#define SAFE_DELETE_ARRAY(p)	\
+	if(p)						\
 	{ delete[] (p); (p)=NULL; }
 
-//#ifndef V
-//#define V(x) { hr = (x);	\
-//	if (FAILED(hr))			\
-//	{ MessageBox(NULL, L#x, L"Error", 0x00020000L); } }	
-//#endif
 #ifndef V
 #define V(x) { if (FAILED(x)) { MessageBox(NULL, L#x, L"Error", 0x00020000L); } }	
 #endif
-//#ifndef V_RETURN
-//#define V_RETURN(x) { hr = (x); \
-//	if (FAILED(hr))				\
-//	{ MessageBox(NULL, L#x, L"Error", 0x00020000L); } }	
-//#endif
 
 #ifdef SIMPLEDLL_EXPORT
 #define DLL_EXPORT __declspec(dllexport)
@@ -69,5 +60,12 @@ struct size
 	size() = default;
 	size(UINT w, UINT h) : width(w), height(h) { NULL; }
 };
+
+
+#ifdef DEBUG
+#define WLOG(x) wcout<<"log: "<<x<<endl;
+#else
+#define WLOG(x) do witch)(0)
+#endif
 
 NS_WE_END

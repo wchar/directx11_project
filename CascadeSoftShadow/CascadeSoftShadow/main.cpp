@@ -4,21 +4,14 @@
 
 using namespace std;
 
-void f()
-{
-    cout << "asd" << endl;
-}
+#define RETURN getchar();return 0;
 
 int main()
 {
-    function<void(int)> a = [](int b){ f();  };
-    a(1);
-    //hash_map<const char *, int, hash<const char *>, eqstr> months;
-    hash_map<char*, int> IntHash;
-    IntHash["asd"] = 1;
-    cout << IntHash["asd"] << endl;
-    //cout << "march -> " << months["march"] << endl;
-	getchar();
-	return 0;
+	cout << sizeof(function<void()>) << sizeof(int) << endl;
+
+	
+
+	RETURN;
 }
 

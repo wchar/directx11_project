@@ -8,3 +8,6 @@
 *.log
 *.tlog
 *.lastbuildstate
+ThirdParty/FBX/lib/libfbxsdk-md.lib
+ThirdParty/FBX/lib/libfbxsdk-mt.lib
+ThirdParty/FBX/lib/libfbxsdk.lib

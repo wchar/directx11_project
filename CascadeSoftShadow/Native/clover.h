@@ -55,3 +55,4 @@ DLL_EXPORT Camera* gLight();
 
 NS_WE_END
 
+#include <iostream>

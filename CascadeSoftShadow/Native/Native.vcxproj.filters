@@ -44,6 +44,12 @@
     <ClInclude Include="wemath.h">
       <Filter>base</Filter>
     </ClInclude>
+    <ClInclude Include="CascadeManager.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="Sampler.h">
+      <Filter>core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="WE">
@@ -92,6 +98,12 @@
     </ClCompile>
     <ClCompile Include="wemath.cpp">
       <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="CascadeManager.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="Sampler.cpp">
+      <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

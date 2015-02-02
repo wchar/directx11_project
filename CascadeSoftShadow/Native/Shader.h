@@ -10,6 +10,7 @@ public:
     Shader(){}
     virtual ~Shader(){}
     virtual void prepare() = 0;
+
 protected:
     ID3DBlob* _blob;
 };
@@ -17,6 +18,7 @@ protected:
 class VertexShader : public Shader
 {
 public:
+	VertexShader(function<void(ID3DBlob**, ID3D11VertexShader**)>);
     VertexShader(wchar_t* file);
     ~VertexShader();
 
@@ -28,6 +30,7 @@ protected:
 class PixelShader : public Shader
 {
 public:
+	PixelShader(function<void(ID3DBlob**, ID3D11PixelShader**)>);
     PixelShader(wchar_t* file);
     ~PixelShader();
 
@@ -79,18 +82,56 @@ public:
     virtual void prepare();
 };
 
+class CascadeBlurPixelShader : public PixelShader
+{
+public:
+	CascadeBlurPixelShader();
+	~CascadeBlurPixelShader();
+	virtual void prepare();
+};
+
+class VarianceBlurX : public PixelShader
+{
+public:
+	VarianceBlurX();
+	~VarianceBlurX();
+	virtual void prepare();
+protected:
+	ID3D11PixelShader* _PS;
+};
+
+class VarianceBlurY : public PixelShader
+{
+public:
+	VarianceBlurY();
+	~VarianceBlurY();
+	virtual void prepare();
+protected:
+	ID3D11PixelShader* _PS;
+};
+
+class VarianceBlurVS : public VertexShader
+{
+public:
+	VarianceBlurVS();
+	~VarianceBlurVS();
+	virtual void prepare();
+protected:
+	ID3D11VertexShader* _VS;
+};
+
 class HDR;
 class HDAO;
 
 class Shaders
 {
 public:
-    void prepareToCascade()
+    void prepareToMesh()
     {
         _meshVertexShader.prepare();
         _meshPixelShader.prepare();
     }
-    void prepareToMesh()
+    void prepareToCascade()
     {
         _meshVertexShader.prepare();
         _cascadeShader.prepare();
@@ -100,12 +141,25 @@ public:
         _fullScreenVertexShader.prepare();
         _fullScreenPixelShader.prepare();
     }
+	void prepareToBlurX()
+	{
+		_varianceBlurVS.prepare();
+		_varianceBlurX.prepare();
+	}
+	void prepareToBlurY()
+	{
+		_varianceBlurVS.prepare();
+		_varianceBlurY.prepare();
+	}
 private:
     MeshVertexShader _meshVertexShader;
     MeshPixelShader _meshPixelShader;
     CascadeShader _cascadeShader;
     FullScreenVertexShader _fullScreenVertexShader;
     FullScreenPixelShader _fullScreenPixelShader;
+	VarianceBlurX _varianceBlurX;
+	VarianceBlurY _varianceBlurY;
+	VarianceBlurVS _varianceBlurVS;
 };
 
 NS_WE_END
