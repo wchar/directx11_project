@@ -41,14 +41,20 @@
 						{
 #define NS_NONE_END		}
 
-#define USING_STD		using namespace std;
-USING_STD
-
 #include <vector>
 #include <list>
 #include <functional>
-#include <hash_map>
+#include <unordered_map>
+#include <iostream>
+#include <string>
 
+using namespace std;
+
+#ifdef DEBUG
+#define WLOG(x) wcout<<"log: "<<x<<endl;
+#else
+#define WLOG(x) do witch)(0)
+#endif
 
 NS_WE_BEGAN
 
@@ -61,11 +67,21 @@ struct size
 	size(UINT w, UINT h) : width(w), height(h) { NULL; }
 };
 
+template<class type>
+class auto_release_ptr
+{
+public:
+	auto_release_ptr(type *com)
+		: _com(com)
+	{}
+	~auto_release_ptr()
+	{
+		SAFE_RELEASE(_com);
+	}
+private:
+	type *_com;
+};
 
-#ifdef DEBUG
-#define WLOG(x) wcout<<"log: "<<x<<endl;
-#else
-#define WLOG(x) do witch)(0)
-#endif
+#define STATIC_AUTO_RELEASE(x) { static auto_release_ptr<IUnknown> s_auto_ptr(x); }
 
 NS_WE_END

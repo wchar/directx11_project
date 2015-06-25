@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <wx/wx.h>
 #include "WE.h"
 
@@ -13,6 +14,10 @@ public:
 	{
 		return _renderer;
 	}
+
+	void tick(function<void()> callback);
+
+	void setMesh(int i);
 private:
 	void createD3DWin();
 	void onSize(wxSizeEvent& evt);
@@ -20,10 +25,7 @@ private:
 
 	WE::ModelViewerCamera* _camera;
 	WE::Renderer* _renderer;
-
-	wxTimer _timer;
-	void tick(wxTimerEvent& event);
-
+	WE::Mesh* _meshs[4];
 	DECLARE_EVENT_TABLE();
 };
 

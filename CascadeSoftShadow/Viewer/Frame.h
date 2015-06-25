@@ -1,8 +1,9 @@
 #pragma once
 
 #include <wx/wx.h>
+#include "wxfb.h"
 
-class CEFrame : public wxFrame
+class CEFrame : public fbFrame
 {
 public:
 	CEFrame(wxFrame *frame, const wxString& title);
@@ -10,6 +11,5 @@ public:
 
 	bool create();
 private:
-
-
+	void onClose(wxCloseEvent& event);
 };

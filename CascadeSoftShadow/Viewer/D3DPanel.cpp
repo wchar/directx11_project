@@ -11,57 +11,68 @@ D3DPanel::D3DPanel(wxWindow* parent)
 	WE::gD3D()->create(this->GetHandle());
 
 	_renderer = new WE::Renderer();
-	_camera = new WE::ModelViewerCamera();
 
-	auto mesh = WE::Mesh::createFromFbx(L"mesh/cub.fbx");
-	_renderer->setMesh(mesh);
-
-	_timer.SetOwner(this, wxID_ANY);
-	_timer.Start(1000);
-	this->Connect(wxID_ANY, wxEVT_TIMER, wxTimerEventHandler(D3DPanel::tick));
+	_meshs[0] = WE::Mesh::createFromFbx(L"..\\mesh\\test.fbx");
+	_meshs[1] = WE::Mesh::createFromFbx(L"..\\mesh\\role.fbx");
+	_meshs[2] = WE::Mesh::createFromFbx(L"..\\mesh\\building.fbx");
+	_meshs[3] = WE::Mesh::createFromFbx(L"..\\mesh\\city.fbx");
+	auto _camera = static_cast<WE::ModelViewerCamera*>(WE::gCamera());
+	
+	_renderer->setMesh(_meshs[0]);
 }
 
 D3DPanel::~D3DPanel()
 {
-	SAFE_DELETE(_camera);
 
-	this->Disconnect(wxID_ANY, wxEVT_TIMER, wxTimerEventHandler(D3DPanel::tick));
 }
 
 void D3DPanel::onSize(wxSizeEvent& evt)
 {
 	this->SetSize(evt.GetSize());
-	//_renderer->resizeWindow();
+	_renderer->resizeWindow();
 }
 
 void D3DPanel::onMouseEvent(wxMouseEvent& evt)
 {
+	this->SetFocus();
+	
 	wxPoint pt(evt.GetPosition());
 
-	//if (evt.LeftDown())
-	//{
-	//	_camera->began(pt.x, pt.y);
-	//	SetFocus();
-	//}
-	//else if (evt.Dragging() && evt.LeftIsDown())
-	//{
-	//	_camera->moved(pt.x, pt.y);
-	//}
-	//else if (evt.LeftUp())
-	//{
-	//	_camera->ended();
-	//}
+	WE::Camera* tmpCamera = WE::gCamera();
 
-	//if (evt.GetWheelRotation() != 0)
-	//{
-	//	if (evt.GetWheelRotation() > 0)
-	//		_camera->closer();
-	//	else
-	//		_camera->further();
-	//}
+	if (GetAsyncKeyState('L'))
+		tmpCamera = WE::gLight();
+
+	auto _camera = static_cast<WE::ModelViewerCamera*>(tmpCamera);
+	if (evt.LeftDown())
+	{
+		_camera->began(pt.x, pt.y);
+	}
+	else if (evt.Dragging() && evt.LeftIsDown())
+	{
+		_camera->moved(pt.x, pt.y);
+	}
+	else if (evt.LeftUp())
+	{
+		_camera->ended();
+	}
+
+	if (evt.GetWheelRotation() != 0)
+	{
+		if (evt.GetWheelRotation() > 0)
+			_camera->closer();
+		else
+			_camera->further();
+	}
 }
 
-void D3DPanel::tick(wxTimerEvent& event)
+void D3DPanel::tick(function<void()> callback)
 {
 	_renderer->onFrameRender();
+	callback();
+}
+
+void D3DPanel::setMesh(int i)
+{
+	_renderer->setMesh(_meshs[i]);
 }

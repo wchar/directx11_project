@@ -1,6 +1,7 @@
 #include "App.h"
 #include "Frame.h"
 
+
 // show console 
 #pragma comment(linker,"/subsystem:console /entry:WinMainCRTStartup")
 

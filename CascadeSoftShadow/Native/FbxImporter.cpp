@@ -121,6 +121,7 @@ static void s_getUV(FbxMesh* pMesh, XMFLOAT2* vOut, int iPolygon, int iVertex)
     vOut->y = texcoord[1];
 }
 
+
 static void s_getNormal(FbxMesh* pMesh, XMFLOAT3* vOut, int iPolygon, int iVertex)
 {
     FbxVector4 normal;

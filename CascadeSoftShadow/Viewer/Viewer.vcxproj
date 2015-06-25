@@ -45,6 +45,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\ThirdParty\wxWidgets\include;..\..\ThirdParty\DirectX\Include;..\Native;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -70,11 +71,15 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="D3DPanel.cpp" />
     <ClCompile Include="Frame.cpp" />
+    <ClCompile Include="PropertiesPanel.cpp" />
+    <ClCompile Include="wxfb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="D3DPanel.h" />
     <ClInclude Include="Frame.h" />
+    <ClInclude Include="PropertiesPanel.h" />
+    <ClInclude Include="wxfb.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

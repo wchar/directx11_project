@@ -7,11 +7,11 @@ NS_WE_BEGAN
 
 namespace Sampler
 {
-
-void setLinear(int start, int num);
-void setShadowPoint(int start, int num);
-void setShadowAnisotropic16(int start, int num);
-
+#define FUNC_DEF(funcName) void funcName(int start, int num);
+	FUNC_DEF(setPoint);
+	FUNC_DEF(setLinear);
+	FUNC_DEF(setShadowPoint);
+	FUNC_DEF(setShadowAnisotropic16);
 }
 
 NS_WE_END

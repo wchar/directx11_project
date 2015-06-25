@@ -11,7 +11,8 @@ static const INT MAX_BUFFER_SIZE = 2048;
 static const XMVECTORF32 s_FLTMAX = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
 static const XMVECTORF32 s_FLTMIN = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 static const XMVECTORF32 s_halfVector = { 0.5f, 0.5f, 0.5f, 0.5f };
-
+static const float s_scale = 1.0f;
+static const float s_size = 1000.0f;
 CascadeManager::CascadeManager()
     : _rsScene(nullptr)
     , _rsShadow(nullptr)
@@ -47,7 +48,7 @@ CascadeManager::CascadeManager()
     cascadeConfig.cascadePartitionsZeroToOne[7] = 100;
     cascadeConfig.cascadePartitionsMax = 100;
     cascadeConfig.visualizeCascades = false;
-    cascadeConfig.shadowBlurSize = 15;
+    cascadeConfig.shadowBlurSize = 9;
     cascadeConfig.blurBetweenCascades = 0;
     cascadeConfig.blurBetweenCascadesAmount = 0.005;
     cascadeConfig.moveLightTexelSize = true;
@@ -62,8 +63,10 @@ CascadeManager::CascadeManager()
         _renderVP[index].TopLeftY = 0;
     }
 
-    _sceneAABBMin = XMFLOAT3(-100.0f, -100.0f, -100.0f);
-    _sceneAABBMax = XMFLOAT3(100.0f, 100.0f, 100.0f);
+
+	_sceneAABBMin = XMFLOAT3(-s_size, -s_size, -s_size);
+	_sceneAABBMax = XMFLOAT3(s_size, s_size, s_size);
+	cameraFar = 300;
 }
 
 CascadeManager::~CascadeManager()
@@ -770,14 +773,14 @@ static void s_createAABBPoints(XMVECTOR *vAABBPoints, FXMVECTOR vCenter, FXMVECT
     //This map enables us to use a for loop and do vector math.
     static const XMVECTORF32 vExtentsMap[] =
     {
-        { 1.0f, 1.0f, -1.0f, 1.0f },
-        { -1.0f, 1.0f, -1.0f, 1.0f },
-        { 1.0f, -1.0f, -1.0f, 1.0f },
+        {  1.0f,  1.0f, -1.0f, 1.0f },
+        { -1.0f,  1.0f, -1.0f, 1.0f },
+        {  1.0f, -1.0f, -1.0f, 1.0f },
         { -1.0f, -1.0f, -1.0f, 1.0f },
-        { 1.0f, 1.0f, 1.0f, 1.0f },
-        { -1.0f, 1.0f, 1.0f, 1.0f },
-        { 1.0f, -1.0f, 1.0f, 1.0f },
-        { -1.0f, -1.0f, 1.0f, 1.0f }
+        {  1.0f,  1.0f,  1.0f, 1.0f },
+        { -1.0f,  1.0f,  1.0f, 1.0f },
+        {  1.0f, -1.0f,  1.0f, 1.0f },
+        { -1.0f, -1.0f,  1.0f, 1.0f }
     };
 
     for (INT index = 0; index < 8; ++index)
@@ -820,7 +823,7 @@ void CascadeManager::computeMatrices()
     FLOAT fFrustumIntervalBegin, fFrustumIntervalEnd;
     XMVECTOR vLightCameraOrthographicMin;  // light space frustrum aabb
     XMVECTOR vLightCameraOrthographicMax;
-    FLOAT fCameraNearFarRange = 20.0f;
+    FLOAT fCameraNearFarRange = cameraFar;
 
     XMVECTOR vWorldUnitsPerTexel = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -895,8 +898,6 @@ void CascadeManager::computeMatrices()
         vWorldUnitsPerTexel = vLightCameraOrthographicMax - vLightCameraOrthographicMin;
         vWorldUnitsPerTexel *= vNormalizeByBufferSize;
 
-
-
         if (cascadeConfig.moveLightTexelSize)
         {
 
@@ -915,7 +916,7 @@ void CascadeManager::computeMatrices()
         //These are the unconfigured near and far plane values.  They are purposly awful to show
         // how important calculating accurate near and far planes is.
         FLOAT fNearPlane = 0.0f;
-        FLOAT fFarPlane = 20.0f;
+		FLOAT fFarPlane = cameraFar;
 
         XMVECTOR vLightSpaceSceneAABBminValue = s_FLTMAX;  // world space scene aabb
         XMVECTOR vLightSpaceSceneAABBmaxValue = s_FLTMIN;
@@ -976,54 +977,59 @@ bool CascadeManager::sceneSetConstantBuffer()
         XMFLOAT3    eyePos;
         FLOAT       padding;
     };
-	static BufferType<CB> s_bt([=](CB * pcb)
-    {
-        // This is a floating point number that is used as the percentage to blur between maps.
-        pcb->cascadeBlendArea = cascadeConfig.blurBetweenCascadesAmount;
-        pcb->texelSize = 1.0f / (float)cascadeConfig.bufferSize;
-        pcb->nativeTexelSizeInX = pcb->texelSize / cascadeConfig.cascadeLevels;
 
-        XMMATRIX mTextureScale = XMMatrixScaling(0.5f, -0.5f, 1.0f);
-        XMMATRIX mTextureTranslation = XMMatrixTranslation(0.5f, 0.5f, 0.0f);
-        XMMATRIX scaleToTile = XMMatrixScaling(1.0f / (float)cascadeConfig.cascadeLevels, 1.0f, 1.0f);
-        for (int index = 0; index < cascadeConfig.cascadeLevels; ++index)
-        {
-            XMMATRIX mShadowTexture = XMLoadFloat4x4(_shadowProj + index) * mTextureScale * mTextureTranslation;
-            pcb->cascadeScale[index].x = mShadowTexture._11;
-            pcb->cascadeScale[index].y = mShadowTexture._22;
-            pcb->cascadeScale[index].z = mShadowTexture._33;
-            pcb->cascadeScale[index].w = 1;
+	auto func = [=](CB * pcb)
+	{
+		// This is a floating point number that is used as the percentage to blur between maps.
+		pcb->cascadeBlendArea = cascadeConfig.blurBetweenCascadesAmount;
+		pcb->texelSize = 1.0f / (float)cascadeConfig.bufferSize;
+		pcb->nativeTexelSizeInX = pcb->texelSize / cascadeConfig.cascadeLevels;
 
-            pcb->cascadeOffset[index].x = mShadowTexture._41;
-            pcb->cascadeOffset[index].y = mShadowTexture._42;
-            pcb->cascadeOffset[index].z = mShadowTexture._43;
-            pcb->cascadeOffset[index].w = 0;
-        }
+		XMMATRIX mTextureScale = XMMatrixScaling(0.5f, -0.5f, 1.0f);
+		XMMATRIX mTextureTranslation = XMMatrixTranslation(0.5f, 0.5f, 0.0f);
+		XMMATRIX scaleToTile = XMMatrixScaling(1.0f / (float)cascadeConfig.cascadeLevels, 1.0f, 1.0f);
+		for (int index = 0; index < cascadeConfig.cascadeLevels; ++index)
+		{
+			XMMATRIX mShadowTexture = XMLoadFloat4x4(_shadowProj + index) * mTextureScale * mTextureTranslation;
+			pcb->cascadeScale[index].x = mShadowTexture._11;
+			pcb->cascadeScale[index].y = mShadowTexture._22;
+			pcb->cascadeScale[index].z = mShadowTexture._33;
+			pcb->cascadeScale[index].w = 1;
 
-        // Copy intervals for the depth interval selection method.
-        memcpy(pcb->cascadeFrustumsEyeSpaceDepths,
-               _cascadePartitionsFrustum, MAX_CASCADES * 4);
+			pcb->cascadeOffset[index].x = mShadowTexture._41;
+			pcb->cascadeOffset[index].y = mShadowTexture._42;
+			pcb->cascadeOffset[index].z = mShadowTexture._43;
+			pcb->cascadeOffset[index].w = 0;
+		}
 
-        // The border padding values keep the pixel shader from reading the borders during PCF filtering.
-        pcb->maxBorderPadding = (float)(cascadeConfig.bufferSize - 1.0f) / (float)cascadeConfig.bufferSize;
-        pcb->minBorderPadding = (float)(1.0f) / (float)cascadeConfig.bufferSize;
+		// Copy intervals for the depth interval selection method.
+		memcpy(pcb->cascadeFrustumsEyeSpaceDepths,
+			_cascadePartitionsFrustum, MAX_CASCADES * 4);
 
-        XMVECTOR ep = gLight()->getEyeV();
-        XMVECTOR lp = gLight()->getLookatV();
-        XMVECTOR dir = XMVector3Normalize(ep - lp);
-        XMStoreFloat4(&pcb->lightDir, dir);
-        pcb->eyePos = gCamera()->getEye();
-        pcb->cascadeLevels = cascadeConfig.cascadeLevels;
-        pcb->visualizeCascades = cascadeConfig.visualizeCascades;
-    });
-    s_bt.map();
+		// The border padding values keep the pixel shader from reading the borders during PCF filtering.
+		pcb->maxBorderPadding = (float)(cascadeConfig.bufferSize - 1.0f) / (float)cascadeConfig.bufferSize;
+		pcb->minBorderPadding = (float)(1.0f) / (float)cascadeConfig.bufferSize;
+
+		XMVECTOR ep = gLight()->getEyeV();
+		XMVECTOR lp = gLight()->getLookatV();
+		XMVECTOR dir = XMVector3Normalize(ep - lp);
+		XMStoreFloat4(&pcb->lightDir, dir);
+		pcb->eyePos = gCamera()->getEye();
+		pcb->cascadeLevels = cascadeConfig.cascadeLevels;
+		pcb->visualizeCascades = cascadeConfig.visualizeCascades;
+	};
+
+    static BufferType<CB> s_bt;
+    s_bt.map(func);
     s_bt.setPS(0, 1);
 
     return true;
 }
 
-void CascadeManager::processCascade(Mesh* mesh)
+void CascadeManager::processCascade(Mesh *mesh)
 {
+	computeMatrices();
+
     gContext()->RSSetState(_rsShadow);
 
     gContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -1036,34 +1042,31 @@ void CascadeManager::processCascade(Mesh* mesh)
         gContext()->RSSetViewports(1, &_renderOneTileVP);
 
         // constant buffer
-		{
-			struct CB
+        {
+            struct CB
+            {
+                XMMATRIX mWorldViewProj;
+            };
+
+			auto func = [=](CB * data)
 			{
-				XMMATRIX mWorldViewProj;
-				XMMATRIX mWorldView;
-				XMMATRIX mWorld;
-				XMMATRIX mShadow;
-			};
-			static BufferType<CB> s_bt([=](CB * data)
-			{
-				XMMATRIX mWorld = XMMatrixIdentity();
+				XMMATRIX mWorld = XMMatrixScaling(s_scale, s_scale, s_scale);
 				XMMATRIX mView = XMLoadFloat4x4(&_shadowView);
 				XMMATRIX mProj = XMLoadFloat4x4(_shadowProj + currentCascade);
 
 				data->mWorldViewProj = XMMatrixTranspose(mWorld * mView * mProj);
-				data->mWorldView = XMMatrixTranspose(mWorld * mView);
-				data->mWorld = XMMatrixTranspose(mWorld);
-				data->mShadow = XMLoadFloat4x4(&_shadowView);
-			});
-			s_bt.map();
+			};
 
-		}
+			static BufferType<CB> s_bt;
+			s_bt.map(func);
+			s_bt.setVS(0, 1);
+        }
         // draw
-		mesh->drawSubset();
+        mesh->drawSubset();
     }
 }
 
-void CascadeManager::processBlur(Shaders* shaders)
+void CascadeManager::processBlur(Shaders *shaders)
 {
     // Process blur.
     ID3D11DepthStencilView *dsNullview = nullptr;
@@ -1097,26 +1100,28 @@ void CascadeManager::processBlur(Shaders* shaders)
                     int sampleStart;
                     int sampleEnd;
                 };
-				static BufferType<VarianceBlurBufferType> s_bt([=](VarianceBlurBufferType * data)
+
+				auto func = [=](VarianceBlurBufferType * data)
 				{
 					data->width = cascadeConfig.bufferSize;
 					data->height = cascadeConfig.bufferSize;
 					data->sampleStart = start;
 					data->sampleEnd = end;
-				});
-                s_bt.map();
-				s_bt.setPS(2, 1);
+				};
+                static BufferType<VarianceBlurBufferType> s_bt;
+                s_bt.map(func);
+                s_bt.setPS(2, 1);
             }
 
             // blur x
-			shaders->prepareToBlurX();
+            shaders->prepareToBlurX();
             gContext()->PSSetShaderResources(5, 1, &srvNull);
             gContext()->OMSetRenderTargets(1, &_cascadedShadowMapTempBlurRTV, dsNullview);
             gContext()->PSSetShaderResources(5, 1, &_cascadedShadowMapVarianceSRVArrayAll[iCurrentCascade]);
             gContext()->Draw(4, 0);
 
             // blur y
-			shaders->prepareToBlurY();
+            shaders->prepareToBlurY();
             gContext()->PSSetShaderResources(5, 1, &srvNull);
             gContext()->OMSetRenderTargets(1, &_cascadedShadowMapVarianceRTVArrayAll[iCurrentCascade], dsNullview);
             gContext()->PSSetShaderResources(5, 1, &_cascadedShadowMapTempBlurSRV);
@@ -1125,24 +1130,24 @@ void CascadeManager::processBlur(Shaders* shaders)
     }
 }
 
-void CascadeManager::processScene(Mesh* mesh)
+void CascadeManager::processScene(Mesh *mesh)
 {
-    float color[4] = { 0, 0, 0, 1 };
+    float color[4] = { 0.4, 0.4, 0.4, 1 };
     gContext()->ClearRenderTargetView(_renderTargetView, color);
-
-    // prepare
     gContext()->ClearDepthStencilView(_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
     gContext()->OMSetRenderTargets(1, &_renderTargetView, _depthStencilView);
+	
     gContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     gContext()->RSSetViewports(1, &_viewport);
     gContext()->RSSetState(_rsScene);
-
+	
     // Set samplers and resouce for depth map.
     Sampler::setLinear(0, 1);
     Sampler::setShadowAnisotropic16(5, 1);
     gContext()->PSSetShaderResources(5, 1, &_cascadedShadowMapVarianceSRVArraySingle);
-
-	// constant buffer.
+	
+    // constant buffer.
     sceneSetConstantBuffer();
     {
         struct CB
@@ -1152,21 +1157,49 @@ void CascadeManager::processScene(Mesh* mesh)
             XMMATRIX mWorld;
             XMMATRIX mShadow;
         };
-        static BufferType<CB> s_bt([ = ](CB * data)
-        {
-			XMMATRIX mWorld = XMMatrixIdentity();
+
+		auto func = [=](CB * data)
+		{
+			XMMATRIX mWorld = XMMatrixScaling(s_scale, s_scale, s_scale);
 			XMMATRIX mView = gCamera()->getViewM();
 			XMMATRIX mProj = gCamera()->getProjM();
 
 			data->mWorldViewProj = XMMatrixTranspose(mWorld * mView * mProj);
 			data->mWorldView = XMMatrixTranspose(mWorld * mView);
 			data->mWorld = XMMatrixTranspose(mWorld);
-            data->mShadow = XMLoadFloat4x4(&_shadowView);
-		});
-        s_bt.map();
-        s_bt.setVS(1, 1);
-    }    
+			data->mShadow = XMMatrixTranspose(XMLoadFloat4x4(&_shadowView));
+		};
+
+        static BufferType<CB> s_bt;
+        s_bt.map(func);
+        s_bt.setVS(0, 1);
+    }
+	{
+		struct CB
+		{
+			int cascadeLv;
+			int inv;
+			int blend;
+			int padding;
+		};
+
+		auto func = [=](CB * data)
+		{	
+			data->blend = cascadeConfig.blurBetweenCascades;
+			data->inv = cascadeConfig.mapSelection;
+			data->cascadeLv = cascadeConfig.cascadeLevels;
+		};
+
+		static BufferType<CB> s_bt;
+		s_bt.map(func);
+		s_bt.setPS(3, 1);
+	}
+
+    // render scenes with shadow
+    mesh->drawSubset();
 	
-	// render scenes with shadow    
-	mesh->drawSubset();
+	ID3D11ShaderResourceView* nv[] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+	gContext()->PSSetShaderResources(5, 8, nv);
+
+	gD3D()->resetViews();
 }

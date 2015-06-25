@@ -4,182 +4,116 @@
 #include "BufferType.h"
 
 USING_WE
-VertexShader::VertexShader(function<void(ID3DBlob **, ID3D11VertexShader **)> func)
+
+static void s_getPathJoint(wchar_t* fullPath, wchar_t* file)
 {
-    func(&_blob, &_VS);
+	wcscpy_s(fullPath, MAX_PATH, L"..\\shaders\\");
+	wcscat_s(fullPath, MAX_PATH, file);
+	WLOG("loading:" << file);
 }
 
-VertexShader::VertexShader(wchar_t *file)
-    : VertexShader([file](ID3DBlob **blob, ID3D11VertexShader **vs)
+VertexShader::VertexShader(function<void(ID3DBlob **, ID3D11VertexShader **)> func)
 {
-    WLOG(L"load vertex shader: " << file);
-    *blob = gContent()->getBlob(file, "VS");
-    V(gDevice()->CreateVertexShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, vs));
-})
-{
-
+	func(&_blob, &_VS);
 }
 
 VertexShader::~VertexShader()
 {
-    SAFE_RELEASE(_VS);
+	SAFE_RELEASE(_VS);
 }
 
 void VertexShader::prepare()
 {
-    gContext()->VSSetShader(_VS, nullptr, 0);
+	gContext()->VSSetShader(_VS, nullptr, 0);
 }
 
 PixelShader::PixelShader(function<void(ID3DBlob **, ID3D11PixelShader **)> func)
 {
-    func(&_blob, &_PS);
-}
-
-PixelShader::PixelShader(wchar_t *file)
-    : PixelShader([file](ID3DBlob **blob, ID3D11PixelShader **ps)
-{
-    WLOG(L"load pixel shader: " << file);
-    *blob = gContent()->getBlob(file, "PS");
-    V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
-})
-{
-
+	func(&_blob, &_PS);
 }
 
 PixelShader::~PixelShader()
 {
-    SAFE_RELEASE(_PS);
+	SAFE_RELEASE(_PS);
 }
 
 void PixelShader::prepare()
 {
-    gContext()->PSSetShader(_PS, nullptr, 0);
+	gContext()->PSSetShader(_PS, nullptr, 0);
 }
 
-MeshVertexShader::MeshVertexShader()
-    : VertexShader(L"shaders/MeshVS.hlsl")
+
+//MeshVertexShader::MeshVertexShader() : VertexShader(L"MeshVS.hlsl"){}
+MeshVertexShader::MeshVertexShader() : VertexShader([](ID3DBlob **blob, ID3D11VertexShader **vs)
 {
+	static wchar_t path[MAX_PATH];
+	s_getPathJoint(path, L"MeshVS.hlsl");
+	
+	V(compileShaderFromFile(path, NULL, "VSMain", "vs_5_0", blob));
+	V(gDevice()->CreateVertexShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, vs));
 
-}
+	gContent()->addBlob("MeshVertexShader", *blob);
+}){}
 
-MeshVertexShader::~MeshVertexShader()
+//CascadeShader::CascadeShader() : PixelShader(L"MeshCascade.hlsl"){}
+CascadeShader::CascadeShader() : PixelShader([](ID3DBlob **blob, ID3D11PixelShader **ps)
 {
-}
-
-void MeshVertexShader::prepare()
-{
-	VertexShader::prepare();
-}
-
-CascadeShader::CascadeShader()
-    : PixelShader(L"shaders/MeshCascade.hlsl")
-{
-}
-
-CascadeShader::~CascadeShader()
-{
-    SAFE_RELEASE(_PS);
-}
-
-void CascadeShader::prepare()
-{
-    PixelShader::prepare();
-}
-
-MeshPixelShader::MeshPixelShader()
-    : PixelShader(L"shaders/MeshPS.hlsl")
-{
-}
-
-MeshPixelShader::~MeshPixelShader()
-{
-}
-
-void MeshPixelShader::prepare()
-{
-    PixelShader::prepare();
-}
-
-FullScreenVertexShader::FullScreenVertexShader()
-    : VertexShader(L"shaders/FullScreenQuadVS.hlsl")
-{
-}
-
-FullScreenVertexShader::~FullScreenVertexShader()
-{
-}
-
-void FullScreenVertexShader::prepare()
-{
-    VertexShader::prepare();
-}
-
-FullScreenPixelShader::FullScreenPixelShader()
-    : PixelShader(L"shaders/TestSRV.hlsl")
-{
-}
-
-FullScreenPixelShader::~FullScreenPixelShader()
-{
-}
-
-void FullScreenPixelShader::prepare()
-{
-    PixelShader::prepare();
-}
-
-VarianceBlurX::VarianceBlurX()
-    : PixelShader([](ID3DBlob **blob, ID3D11PixelShader **ps)
-{
-	V(compileShaderFromFile(L"shaders/Variance.hlsl", NULL, "PSBlurX", "ps_5_0", blob));
-    V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
-})
-{
-
-}
-
-VarianceBlurX::~VarianceBlurX()
-{
-
-}
-
-void VarianceBlurX::prepare()
-{
-	PixelShader::prepare();
-}
-
-VarianceBlurY::VarianceBlurY()
-    : PixelShader([](ID3DBlob **blob, ID3D11PixelShader **ps)
-{
-	V(compileShaderFromFile(L"shaders/Variance.hlsl", NULL, "PSBlurY", "ps_5_0", blob));
+	wchar_t path[MAX_PATH];
+	s_getPathJoint(path, L"MeshCascade.hlsl");
+	V(compileShaderFromFile(path, NULL, "PSMain", "ps_5_0", blob));
 	V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
-})
+}){}
+
+//MeshPixelShader::MeshPixelShader() : PixelShader(L"MeshPS.hlsl"){}
+MeshPixelShader::MeshPixelShader() : PixelShader([](ID3DBlob **blob, ID3D11PixelShader **ps)
 {
-	PixelShader::prepare();
-}
+	wchar_t path[MAX_PATH];
+	s_getPathJoint(path, L"MeshPS.hlsl");
+	V(compileShaderFromFile(path, NULL, "PSMain", "ps_5_0", blob));
+	V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
+}){}
 
-VarianceBlurY::~VarianceBlurY()
+
+FullScreenVertexShader::FullScreenVertexShader() : VertexShader([](ID3DBlob **blob, ID3D11VertexShader **vs)
 {
+	static wchar_t path[MAX_PATH];
+	s_getPathJoint(path, L"FullScreenQuadVS.hlsl");
+	V(compileShaderFromFile(path, NULL, "VSMain", "vs_5_0", blob));
+	V(gDevice()->CreateVertexShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, vs));
 
-}
+	gContent()->addBlob("FullScreenQuadVS.hlsl", *blob);
+}){}
 
-void VarianceBlurY::prepare()
+FullScreenPixelShader::FullScreenPixelShader() : PixelShader([](ID3DBlob **blob, ID3D11PixelShader **ps)
 {
-	PixelShader::prepare();
-}
+	wchar_t path[MAX_PATH];
+	s_getPathJoint(path, L"TestSRV.hlsl");
+	V(compileShaderFromFile(path, NULL, "PSMain", "ps_5_0", blob));
+	V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
+}){}
 
-VarianceBlurVS::VarianceBlurVS()
-	: VertexShader(L"shaders/Variance.hlsl")
+VarianceBlurVS::VarianceBlurVS() : VertexShader([](ID3DBlob **blob, ID3D11VertexShader **vs)
 {
+	static wchar_t path[MAX_PATH];
+	s_getPathJoint(path, L"Variance.hlsl");
+	V(compileShaderFromFile(path, NULL, "VSMain", "vs_5_0", blob));
+	V(gDevice()->CreateVertexShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, vs));
+}){}
 
-}
-
-VarianceBlurVS::~VarianceBlurVS()
+VarianceBlurX::VarianceBlurX() : PixelShader([](ID3DBlob **blob, ID3D11PixelShader **ps)
 {
+	wchar_t path[MAX_PATH];
+	s_getPathJoint(path, L"Variance.hlsl");
+	V(compileShaderFromFile(path, NULL, "PSBlurX", "ps_5_0", blob));
+	V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
+}){}
 
-}
-
-void VarianceBlurVS::prepare()
+VarianceBlurY::VarianceBlurY() : PixelShader([](ID3DBlob **blob, ID3D11PixelShader **ps)
 {
-	VertexShader::prepare();
-}
+	wchar_t path[MAX_PATH];
+	s_getPathJoint(path, L"Variance.hlsl");
+	V(compileShaderFromFile(path, NULL, "PSBlurY", "ps_5_0", blob));
+	V(gDevice()->CreatePixelShader((*blob)->GetBufferPointer(), (*blob)->GetBufferSize(), NULL, ps));
+}){}
+
+

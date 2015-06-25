@@ -4,6 +4,7 @@
 #include "D3D.h"
 #include "Content.h"
 #include "CascadeManager.h"
+#include "Sampler.h"
 
 USING_WE
 
@@ -31,34 +32,38 @@ static void s_drawFullScreenQuad()
     static ID3D11InputLayout *s_layout = nullptr;
     static ID3D11Buffer *s_vb = nullptr;
 
-    if (!s_vb || !s_layout)
-    {
-        // create
-        auto blob = gContent()->getBlob(L"shaders/FullScreenQuadVS.hlsl", "PS");
+	s_getShaders()->prepareToTest();
+	gD3D()->resetViews();
 
-        // layout
-        D3D11_INPUT_ELEMENT_DESC layout[] =
-        {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        };
-        UINT numElements = ARRAYSIZE(layout);
-        V(gDevice()->CreateInputLayout(layout, numElements, blob->GetBufferPointer(), blob->GetBufferSize(), &s_layout));
+	if (!s_vb || !s_layout)
+	{
+		// create
+		auto blob = gContent()->getBlob("FullScreenQuadVS.hlsl");
 
-        // Create vertex buffer of the screen space
-        VERTEX vertices[6] =
-        {
-            { XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) }, // right top
-            { XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }, // right bottom
-            { XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) }, // left bottom
-            { XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) }, // left bottom
-            { XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) }, // left top
-            { XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) }  // right top
-        };
-        V(createBuffer(sizeof(VERTEX), 6, vertices, &s_vb));
+		// layout
+		D3D11_INPUT_ELEMENT_DESC layout[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+		UINT numElements = ARRAYSIZE(layout);
+		V(gDevice()->CreateInputLayout(layout, numElements, blob->GetBufferPointer(), blob->GetBufferSize(), &s_layout));
+
+		// Create vertex buffer of the screen space
+		VERTEX vertices[6] =
+		{
+			{ XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) }, // right top
+			{ XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }, // right bottom
+			{ XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) }, // left bottom
+			{ XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) }, // left bottom
+			{ XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) }, // left top
+			{ XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) }  // right top
+		};
+		V(createBuffer(sizeof(VERTEX), 6, vertices, &s_vb));
+
+		STATIC_AUTO_RELEASE(s_layout);
+		STATIC_AUTO_RELEASE(s_vb);
     }
-
-    gD3D()->resetViews();
 
     UINT Strides[] = { sizeof(VERTEX) };
     UINT Offsets[] = { 0 };
@@ -71,6 +76,7 @@ static void s_drawFullScreenQuad()
 Renderer::Renderer()
     : _object(nullptr)
 {
+	_resize = false;
 	getCascadeManager()->create();
 }
 
@@ -79,23 +85,62 @@ Renderer::~Renderer()
 
 }
 
+CascadeManager* Renderer::getManager()
+{
+	return getCascadeManager();
+}
+
+void Renderer::resizeWindow()
+{
+	_resize = true;
+}
+
+ID3D11ShaderResourceView* s_texTest()
+{
+	static ID3D11ShaderResourceView* p = nullptr;
+	if (!p)
+	{
+		V(createSRVFromFile(L"bg.jpg", &p));
+	}
+	return p;  
+}
+
 void Renderer::onFrameRender()
 {
+	if (_resize)
+	{
+		getCascadeManager()->releaseRenderTargetBuffers();
+		gD3D()->onResizeWindow();
+		getCascadeManager()->createRenderTargetBuffers();
+		_resize = false;
+	}
+
     gD3D()->clear();
- 
+	gD3D()->resetViews();
+
 	if (_object)
     {
 		s_getShaders()->prepareToCascade();
 		getCascadeManager()->processCascade(_object);
-
-		getCascadeManager()->processBlur(s_getShaders());
-
-        s_getShaders()->prepareToMesh();
+		
+		if (!GetAsyncKeyState('B'))
+		{
+			getCascadeManager()->processBlur(s_getShaders());
+		}
+		s_getShaders()->prepareToMesh();
 		getCascadeManager()->processScene(_object);
+		auto srv = getCascadeManager()->getSceneResult();
 
-        s_getShaders()->prepareToTest();
-		auto srv = getCascadeManager()->getCascadeResult(0);
+		for (int i = 0; i < 8; i++)
+		{
+			if (GetAsyncKeyState('1' + i))
+			{
+				srv = getCascadeManager()->getCascadeResult(i);
+			}
+		}
+
 		gContext()->PSSetShaderResources(0, 1, &srv);
+		Sampler::setPoint(0, 1);
         s_drawFullScreenQuad();
     }
 

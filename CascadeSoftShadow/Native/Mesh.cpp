@@ -1,6 +1,7 @@
 #include "Mesh.h"
 #include "FbxImporter.h"
 #include "clover.h"
+#include "Content.h"
 
 USING_WE
 
@@ -80,12 +81,39 @@ bool Mesh::loadFbx(wchar_t* file)
     return true;
 }
 
+void s_setInputLayout()
+{
+	static ID3D11InputLayout* s_layout = nullptr;
+
+	if (!s_layout)
+	{
+		// Vertex layout
+		D3D11_INPUT_ELEMENT_DESC layout[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+
+		auto blob = gContent()->getBlob("MeshVertexShader");
+		V(gDevice()->CreateInputLayout(
+			layout, ARRAYSIZE(layout),
+			blob->GetBufferPointer(),
+			blob->GetBufferSize(),
+			&s_layout));
+	}
+
+	gContext()->IASetInputLayout(s_layout);
+}
+
 void Mesh::drawSubset()
 {
     UINT strides[] = { sizeof(Vertex) };
     UINT offsets[] = { 0 };
     gContext()->IASetVertexBuffers(0, 1, &_vertexBuffer, strides, offsets);
     gContext()->IASetIndexBuffer(_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	s_setInputLayout();
 
     for (auto& subset : _subsets)
     {

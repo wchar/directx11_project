@@ -6,7 +6,7 @@ USING_WE
 // Camera
 Camera::Camera()
 {
-    _eye = XMFLOAT3(0.0f, 0.0f, 10.0f);
+    _eye = XMFLOAT3(210.0f, 200.0f, 200.0f);
     _lookat = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
     // Setup the view matrix
@@ -70,7 +70,7 @@ ModelViewerCamera::ModelViewerCamera()
 
     _downPt = XMFLOAT3(0.0f, 0.0f, 1.0f);
     _currentPt = XMFLOAT3(0.0f, 0.0f, 1.0f);
-    _eyeRadius = 6.0;
+    _eyeRadius = 200.0;
     began(0, 0);
     moved(1, 0);
     ended();
@@ -101,7 +101,7 @@ XMFLOAT3 ModelViewerCamera::ScreenToVector(float fScreenPtX, float fScreenPtY)
 void ModelViewerCamera::began(int nX, int nY)
 {
     // Only enter the drag state if the click falls
-	// inside the click rectangle.
+    // inside the click rectangle.
     if (nX >= 0 &&
             nX < (int)(_width) &&
             nY >= 0 &&

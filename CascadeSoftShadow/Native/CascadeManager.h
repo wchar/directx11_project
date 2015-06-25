@@ -39,45 +39,60 @@ public:
     bool recreateCascadeBuffers();
     bool createRenderTargetBuffers();
 
-	void releaseCascadeBuffers();
+    void releaseCascadeBuffers();
     void releaseRenderTargetBuffers();
 
-	void setScenesAABB(XMFLOAT3 max, XMFLOAT3 min)
+    void setScenesAABB(XMFLOAT3 max, XMFLOAT3 min)
     {
         _sceneAABBMin = max;
         _sceneAABBMin = min;
     }
 
-    void processCascade(Mesh* mesh);
-    void processBlur(Shaders* shaders);
-	void processScene(Mesh* mesh);
+	int getScenesSize()
+	{
+		return _sceneAABBMax.x;
+	}
 
-	ID3D11ShaderResourceView* getCascadeResult(int i)
+	void setScenesSize(int v)
 	{
-		return _cascadedShadowMapVarianceSRVArrayAll[i];
+		setScenesAABB(XMFLOAT3(v, v, v), XMFLOAT3(-v, -v, -v));
 	}
-	ID3D11ShaderResourceView* getSceneResult()
+
+	int cameraFar;
+    void processCascade(Mesh *mesh);
+    void processBlur(Shaders *shaders);
+    void processScene(Mesh *mesh);
+
+	ID3D11ShaderResourceView* getCascadeResults()
 	{
-		return _shaderResourceView;
+		return _cascadedShadowMapVarianceSRVArraySingle;
 	}
+    ID3D11ShaderResourceView *getCascadeResult(int i)
+    {
+        return _cascadedShadowMapVarianceSRVArrayAll[i];
+    }
+    ID3D11ShaderResourceView *getSceneResult()
+    {
+        return _shaderResourceView;
+    }
 protected:
-	XMFLOAT3 _sceneAABBMin;
-	XMFLOAT3 _sceneAABBMax;
-	
-	void computeMatrices();
-	bool sceneSetConstantBuffer();
+    XMFLOAT3 _sceneAABBMin;
+    XMFLOAT3 _sceneAABBMax;
 
-	D3D11_VIEWPORT              _renderVP[MAX_CASCADES];
-	D3D11_VIEWPORT              _renderOneTileVP;
-	D3D11_VIEWPORT              _viewport;
+    void computeMatrices();
+    bool sceneSetConstantBuffer();
 
-	XMFLOAT4X4                  _shadowProj[MAX_CASCADES];
-	XMFLOAT4X4                  _shadowView;
+    D3D11_VIEWPORT              _renderVP[MAX_CASCADES];
+    D3D11_VIEWPORT              _renderOneTileVP;
+    D3D11_VIEWPORT              _viewport;
+
+    XMFLOAT4X4                  _shadowProj[MAX_CASCADES];
+    XMFLOAT4X4                  _shadowView;
 
     ID3D11RasterizerState       *_rsScene;
     ID3D11RasterizerState       *_rsShadow;
 
-	FLOAT                       _cascadePartitionsFrustum[MAX_CASCADES];
+    FLOAT                       _cascadePartitionsFrustum[MAX_CASCADES];
     ID3D11Texture2D             *_cascadedShadowMapVarianceTextureArray;
     ID3D11RenderTargetView      *_cascadedShadowMapVarianceRTVArrayAll[MAX_CASCADES];
     ID3D11ShaderResourceView    *_cascadedShadowMapVarianceSRVArrayAll[MAX_CASCADES];
@@ -90,7 +105,7 @@ protected:
     ID3D11RenderTargetView      *_cascadedShadowMapTempBlurRTV;
     ID3D11ShaderResourceView    *_cascadedShadowMapTempBlurSRV;
 
-	// render target
+    // render target
     ID3D11Texture2D             *_renderTargetTexture;
     ID3D11RenderTargetView      *_renderTargetView;
     ID3D11ShaderResourceView    *_shaderResourceView;

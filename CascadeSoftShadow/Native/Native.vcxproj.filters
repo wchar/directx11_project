@@ -15,16 +15,16 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>mesh</Filter>
+      <Filter>core\mesh</Filter>
     </ClInclude>
     <ClInclude Include="MeshMisc.h">
-      <Filter>mesh</Filter>
+      <Filter>core\mesh</Filter>
     </ClInclude>
     <ClInclude Include="fbxCommon.h">
-      <Filter>mesh</Filter>
+      <Filter>core\mesh</Filter>
     </ClInclude>
     <ClInclude Include="FbxImporter.h">
-      <Filter>mesh</Filter>
+      <Filter>core\mesh</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
       <Filter>core</Filter>
@@ -33,7 +33,7 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
-      <Filter>mesh</Filter>
+      <Filter>core\mesh</Filter>
     </ClInclude>
     <ClInclude Include="Content.h">
       <Filter>core</Filter>
@@ -61,7 +61,7 @@
     <Filter Include="core">
       <UniqueIdentifier>{12d6c8ce-830f-4177-9d22-bd23ed6927f4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="mesh">
+    <Filter Include="core\mesh">
       <UniqueIdentifier>{5d472b6e-a5b5-4d33-8059-3a58c4481a16}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -76,13 +76,13 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>mesh</Filter>
+      <Filter>core\mesh</Filter>
     </ClCompile>
     <ClCompile Include="fbxCommon.cpp">
-      <Filter>mesh</Filter>
+      <Filter>core\mesh</Filter>
     </ClCompile>
     <ClCompile Include="FbxImporter.cpp">
-      <Filter>mesh</Filter>
+      <Filter>core\mesh</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
       <Filter>core</Filter>
@@ -91,7 +91,7 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
-      <Filter>mesh</Filter>
+      <Filter>core\mesh</Filter>
     </ClCompile>
     <ClCompile Include="Content.cpp">
       <Filter>core</Filter>

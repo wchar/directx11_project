@@ -9,8 +9,7 @@ template<class type>
 class BufferType
 {
 public:
-	BufferType(function<void(type*)> func)
-		: _func(func)
+	BufferType()
 	{
 		// Create the constant buffers
 		D3D11_BUFFER_DESC Desc;
@@ -27,7 +26,7 @@ public:
 		SAFE_RELEASE(_constantBuffer);
 	}
 
-	void map()
+	void map(function<void(type*)> func)
 	{
 		auto context = gContext();
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -35,7 +34,7 @@ public:
 		// set PS buffer.
 		V(context->Map(_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
 		type* data = (type*)mappedResource.pData;
-		_func(data);
+		func(data);
 		context->Unmap(_constantBuffer, 0);
 	}
 
@@ -48,7 +47,6 @@ public:
 		gContext()->VSSetConstantBuffers(start, num, &_constantBuffer);
 	}
 private:
-	function<void(type*)> _func;
 	ID3D11Buffer* _constantBuffer;
 };
 
